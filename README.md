@@ -12,4 +12,4 @@ https://github.com/BenjaminBarriere/projet-artisan
 Pour faire fonctionner ce projet, il faut copier le .env-sample en un .env et remplir les configurations.
 Ces configurations sont une clé de token (un salt pour le JWT), l'email et le mot de passe de cette email pour l'envoi de mail, le host SMTP correspondant et l'adresse da la DB.
 
-Ensuite il faut aussi utiliser la commande ### `npm install` ou équivalent avec yarn, etc... pour installer les dépendences.
+Ensuite il faut aussi utiliser la commande `npm install` ou équivalent avec yarn, etc... pour installer les dépendences.
