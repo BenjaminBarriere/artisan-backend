@@ -5,6 +5,7 @@ const yup = require("yup")
 const phoneRegExp = /^(?=.*\d)[\d ]+$/
 const { saveImage } = require("../functions/saveImage")
 const htmlspecialchars = require("htmlspecialchars")
+const fs = require("fs")
 
 let schema = yup.object().shape({
    siteTitle: yup.string().required(),
@@ -125,6 +126,12 @@ const updateInfos = async (req, res) => {
             try {
                let id = new ObjectID(req.params.id)
 
+               let cursor = client.db().collection("infos").find({ _id: id })
+
+               let resultGet = await cursor.toArray()
+
+               let oldImage = resultGet[0].presentationImage
+
                let result = await client.db().collection("infos").updateOne(
                   { _id: id },
                   {
@@ -143,8 +150,14 @@ const updateInfos = async (req, res) => {
                )
 
                if (result.modifiedCount === 1 && result.matchedCount === 1) {
-                  if (image64 !== "") saveImage(image64, presentationImage)
-                  res.status(200).json({ msg: "Modification réussie" })
+                  if (image64 !== "") {
+                     saveImage(image64, presentationImage)
+                     fs.unlinkSync(oldImage)
+                  }
+                  res.status(200).json({
+                     msg: "Modification réussie",
+                     img: presentationImage,
+                  })
                } else if (result.matchedCount === 1) {
                   res.status(304).json({
                      msg: "Rien a modifie, on renvoie la meme donnee",

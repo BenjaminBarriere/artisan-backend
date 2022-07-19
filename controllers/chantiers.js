@@ -4,6 +4,7 @@ const { Chantiers } = require("../models/chantiers")
 const htmlspecialchars = require("htmlspecialchars")
 const yup = require("yup")
 const { saveImage } = require("../functions/saveImage")
+const fs = require("fs")
 
 let schema = yup.object().shape({
    chantierTitle: yup.string().required(),
@@ -15,7 +16,7 @@ let schema = yup.object().shape({
 const ajouterChantier = async (req, res) => {
    let chantierTitle = htmlspecialchars(req.body.chantierTitle)
    let chantierContent = htmlspecialchars(req.body.chantierContent)
-   let chantierImage = htmlspecialchars(req.body.chantierImage)
+   let chantierImage = req.body.chantierImage
    let chantierDate = htmlspecialchars(req.body.chantierDate)
    let image64 = ""
 
@@ -131,6 +132,15 @@ const updateChantier = async (req, res) => {
             try {
                let id = new ObjectID(req.params.id)
 
+               let cursor = client
+                  .db()
+                  .collection("chantiers")
+                  .find({ _id: id })
+
+               let resultGet = await cursor.toArray()
+
+               let oldImage = resultGet[0].chantierImage
+
                let result = await client.db().collection("chantiers").updateOne(
                   { _id: id },
                   {
@@ -144,7 +154,11 @@ const updateChantier = async (req, res) => {
                )
 
                if (result.modifiedCount === 1 && result.matchedCount === 1) {
-                  if (image64 !== "") saveImage(image64, chantierImage)
+                  if (image64 !== "") {
+                     saveImage(image64, chantierImage)
+
+                     fs.unlinkSync(oldImage)
+                  }
                   res.status(200).json({
                      msg: "Modification réussie",
                      chantierTitle: chantierTitle,
